@@ -7,6 +7,7 @@
 #include "BrandCircle.h"
 #include "UndoStack.h"
 #include "CheckoutQueue.h"
+#include "Database.h"
 
 class GearHub {
 private:
@@ -16,8 +17,12 @@ private:
     BrandCircle brandShowcase;
     UndoStack undoHistory;
     CheckoutQueue checkoutLine;
+    Database db;
+    bool dbOnline;
+    std::string dbStatus;
 
     void loadSampleProducts();
+    bool loadFromDatabase();
     void rebuildIdIndex();
     void showCatalog() const;
     void filterByBrand() const;

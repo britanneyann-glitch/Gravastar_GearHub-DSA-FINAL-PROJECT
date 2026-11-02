@@ -28,15 +28,31 @@ The program follows the exact 10 menu operations specified in the DSA Final Outp
 ## Partner brand sample data
 Gravastar, DJI, Keychron, Insta360, and EcoFlow. Product details, prices, and quantities are sample classroom data, not live store inventory or a claim of official commercial partnership.
 
-## Compile on Windows PowerShell (g++)
-Open PowerShell in this folder and run:
+## PostgreSQL backend
+Products, brands, and stock levels are stored in PostgreSQL through libpqxx. At startup the program loads them into the same in-memory structures used before (dynamic array, BST index, circular brand list), so the search, sort, cart, queue, and undo code still works on the data structures. Checkout and undo write the stock change to the database in a transaction and add a row to `checkout_log`.
 
-```powershell
-g++ -std=c++17 -Wall -Wextra -pedantic main.cpp GearHub.cpp ProductCatalog.cpp ProductBST.cpp ShoppingCart.cpp BrandCircle.cpp UndoStack.cpp CheckoutQueue.cpp SearchAlgorithms.cpp SortAlgorithms.cpp InputUtils.cpp -o gearhub.exe
-.\gearhub.exe
+If the database cannot be reached, the program prints the error and runs in offline mode with the built-in sample data (nothing is saved).
+
+### One-time setup
+1. Create an empty database (the program creates the tables and sample rows itself on first run):
+   ```
+   psql -U postgres -c "CREATE DATABASE gearhub;"
+   ```
+2. Copy `db.conf.example` to `db.conf` and put your real password in it. `db.conf` is git-ignored. Alternatively, set the `GEARHUB_DB_CONN` environment variable to the same one-line connection string.
+3. Install the libraries in the MSYS2 MinGW64 shell if you have not yet: `pacman -S mingw-w64-x86_64-libpqxx`
+
+`sql/schema.sql` holds the same table definitions if you want to create them by hand.
+
+## Build (MSYS2 MinGW64 shell)
 ```
-
-Compile all `.cpp` files together. Do not compile `main.cpp` alone.
+make
+./gearhub.exe
+```
+Or without make:
+```
+g++ -std=c++17 -Wall -Wextra -pedantic -Iinclude src/*.cpp -o gearhub.exe -lpqxx -lpq
+```
+Run `gearhub.exe` from the folder that contains `db.conf`. If you run it outside the MSYS2 shell, add `C:\msys64\mingw64\bin` to PATH so the libpq and libpqxx DLLs are found.
 
 ## Notes
-This is a classroom console simulation. It does not connect to a database, process real payments, or access live inventory. The checkout queue updates the in-memory stock only while the program is running.
+This is a classroom console simulation. It does not process real payments or access live inventory. Checkout and undo update stock in PostgreSQL when the database is connected. The undo stack itself lives in memory, so undo history is cleared when the program exits.

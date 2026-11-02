@@ -6,11 +6,11 @@
 #include <vector>
 #include <iomanip>
 #include <algorithm>
+#include <cstdlib>
 
-GearHub::GearHub() { loadSampleProducts(); }
-
-void GearHub::loadSampleProducts() {
-    const Product samples[] = {
+namespace {
+std::vector<Product> sampleProducts() {
+    return {
         {1001, "Astra Wireless Speaker", "Audio", "Gravastar", 5499.00, 12},
         {1002, "Mars Pro Speaker", "Audio", "Gravastar", 8999.00, 8},
         {2001, "Osmo Mobile SE", "Camera Gear", "DJI", 6999.00, 10},
@@ -22,10 +22,47 @@ void GearHub::loadSampleProducts() {
         {5001, "EcoFlow River 2", "Power Station", "EcoFlow", 12990.00, 9},
         {5002, "EcoFlow Delta 2", "Power Station", "EcoFlow", 54990.00, 3}
     };
-    for (const Product& p : samples) catalog.add(p);
+}
 
-    const char* brands[] = {"Gravastar", "DJI", "Keychron", "Insta360", "EcoFlow"};
-    for (const char* brand : brands) brandShowcase.addBrand(brand);
+std::vector<std::string> sampleBrands() {
+    return {"Gravastar", "DJI", "Keychron", "Insta360", "EcoFlow"};
+}
+}  // namespace
+
+GearHub::GearHub() : dbOnline(false) {
+    std::cout << "Connecting to PostgreSQL...\n";
+    if (db.connect(Database::defaultConnectionString()) &&
+        db.initSchema() &&
+        db.seedIfEmpty(sampleProducts(), sampleBrands()) &&
+        loadFromDatabase()) {
+        dbOnline = true;
+        dbStatus = "Database: PostgreSQL (connected)";
+        return;
+    }
+
+    // Fall back to the original in-memory sample data so the program still runs.
+    dbStatus = "Database: OFFLINE - sample data only, changes are NOT saved";
+    std::cout << "\nCould not use PostgreSQL:\n  " << db.lastError() << "\n"
+              << "Running in offline mode with built-in sample data.\n"
+              << "\nPress ENTER to continue...";
+    std::string pause;
+    std::getline(std::cin, pause);
+    loadSampleProducts();
+}
+
+bool GearHub::loadFromDatabase() {
+    std::vector<Product> products;
+    std::vector<std::string> brands;
+    if (!db.loadProducts(products) || !db.loadBrands(brands)) return false;
+    for (const Product& p : products) catalog.add(p);
+    for (const std::string& brand : brands) brandShowcase.addBrand(brand);
+    rebuildIdIndex();
+    return true;
+}
+
+void GearHub::loadSampleProducts() {
+    for (const Product& p : sampleProducts()) catalog.add(p);
+    for (const std::string& brand : sampleBrands()) brandShowcase.addBrand(brand);
     rebuildIdIndex();
 }
 
@@ -113,7 +150,12 @@ void GearHub::processCheckout() {
             std::cout << "Order for product ID " << id << " could not be completed (stock changed).\n";
             continue;
         }
-        p->stockQuantity -= quantity;
+        int newStock = p->stockQuantity - quantity;
+        if (dbOnline && !db.deductStock(id, quantity, newStock)) {
+            std::cout << "Order for product ID " << id << " failed: " << db.lastError() << "\n";
+            continue;
+        }
+        p->stockQuantity = newStock;
         undoHistory.push({id, quantity});
         std::cout << "Checked out: " << p->name << " x " << quantity
                   << ". Remaining stock: " << p->stockQuantity << "\n";
@@ -133,7 +175,13 @@ void GearHub::undoLastCheckout() {
         std::cout << "Undo failed because the product no longer exists.\n";
         return;
     }
-    p->stockQuantity += record.quantity;
+    int newStock = p->stockQuantity + record.quantity;
+    if (dbOnline && !db.restoreStock(record.productId, record.quantity, newStock)) {
+        std::cout << "Undo failed: " << db.lastError() << "\n";
+        undoHistory.push(record);  // keep the record so the undo can be retried
+        return;
+    }
+    p->stockQuantity = newStock;
     std::cout << "UNDO SUCCESSFUL: Restored " << record.quantity
               << " unit(s) of " << p->name << ". Current stock: "
               << p->stockQuantity << "\n";
@@ -182,7 +230,8 @@ void GearHub::run() {
                   << "8. Display Partner Brand Banner Showcase (Circular List Cycle)\n"
                   << "9. Sort Inventory Display (By Price, Stock, or Brand)\n"
                   << "10. Exit\n"
-                  << "============================================================\n";
+                  << "============================================================\n"
+                  << dbStatus << "\n";
 
         choice = readInt("Enter your choice: ");
 
