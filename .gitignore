@@ -1,0 +1,43 @@
+# Executable files
+*.exe
+*.out
+
+# Compiled object files
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+
+# Build folders
+/build/
+/bin/
+/Debug/
+/Release/
+/x64/
+/x86/
+
+# Debug files
+*.pdb
+*.ilk
+*.idb
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
