@@ -217,21 +217,27 @@ void GearHub::run() {
         // Clear the terminal screen before showing the menu
         system("cls");
 
-        std::cout << "\n============================================================\n"
-                  << "       GRAVASTAR GEARHUB - E-COMMERCE SYSTEM (CS201)\n"
-                  << "============================================================\n"
-                  << "1. View Complete Catalog\n"
-                  << "2. Filter Products by Official Brand\n"
-                  << "3. Search Products by Keyword (Linear Search)\n"
-                  << "4. Filter Products by Price Range (Binary Search)\n"
-                  << "5. Add Item to Shopping Cart (Doubly Linked List)\n"
-                  << "6. Process Customer Checkout Queue (FIFO Order Queue)\n"
-                  << "7. Perform Admin Undo Action (LIFO Stack Pop)\n"
-                  << "8. Display Partner Brand Banner Showcase (Circular List Cycle)\n"
-                  << "9. Sort Inventory Display (By Price, Stock, or Brand)\n"
-                  << "10. Exit\n"
-                  << "============================================================\n"
-                  << dbStatus << "\n";
+        
+std::cout << "\n============================================================\n"
+          << "                  GRAVASTAR GEARHUB\n"
+          << "                   E-COMMERCE SYSTEM\n"
+          << "============================================================\n"
+          << "\n"
+          << "  [1]  View Product Catalog\n"
+          << "  [2]  Browse Products by Brand\n"
+          << "  [3]  Search Products\n"
+          << "  [4]  Filter Products by Price\n"
+          << "  [5]  Add Products to Shopping Cart\n"
+          << "  [6]  Checkout\n"
+          << "  [7]  Undo Last Transaction\n"
+          << "  [8]  View Partner Brands\n"
+          << "  [9]  Sort Product Inventory\n"
+          << "  [10] Exit Application\n"
+          << "\n"
+          << "============================================================\n"
+          << dbStatus << "\n";
+
+                  
 
         choice = readInt("Enter your choice: ");
 
