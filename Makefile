@@ -1,19 +1,23 @@
 
-# Gravastar GearHub Makefile
 
-CXX = g++
+CXX = C:/msys64/ucrt64/bin/g++.exe
+
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -Iinclude
-LIBS = -lpqxx -lpq
+
+# PostgreSQL and libpqxx configuration
+PQXX_CFLAGS = $(shell pkg-config --cflags libpqxx)
+PQXX_LIBS = $(shell pkg-config --libs libpqxx)
 
 TARGET = gearhub.exe
+
 SOURCES = $(wildcard src/*.cpp)
 
 # Default build target
 all: $(TARGET)
 
-# Compile all source files
+# Compile all C++ source files
 $(TARGET): $(SOURCES)
-	$(CXX) $(CXXFLAGS) $(SOURCES) -o $(TARGET) $(LIBS)
+	$(CXX) $(CXXFLAGS) $(PQXX_CFLAGS) $(SOURCES) -o $(TARGET) $(PQXX_LIBS)
 
 # Build and run the program
 run: $(TARGET)
@@ -21,6 +25,6 @@ run: $(TARGET)
 
 # Remove compiled executable
 clean:
-	if exist $(TARGET) del /Q $(TARGET)
+	rm -f $(TARGET)
 
 .PHONY: all run clean

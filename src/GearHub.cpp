@@ -218,24 +218,33 @@ void GearHub::run() {
         system("cls");
 
         
-std::cout << "\n============================================================\n"
-          << "                  GRAVASTAR GEARHUB\n"
-          << "                   E-COMMERCE SYSTEM\n"
-          << "============================================================\n"
-          << "\n"
-          << "  [1]  View Product Catalog\n"
-          << "  [2]  Browse Products by Brand\n"
-          << "  [3]  Search Products\n"
-          << "  [4]  Filter Products by Price\n"
-          << "  [5]  Add Products to Shopping Cart\n"
-          << "  [6]  Checkout\n"
-          << "  [7]  Undo Last Transaction\n"
-          << "  [8]  View Partner Brands\n"
-          << "  [9]  Sort Product Inventory\n"
-          << "  [10] Exit Application\n"
-          << "\n"
-          << "============================================================\n"
-          << dbStatus << "\n";
+// ANSI color codes: green for menu options 1-9, red for Exit.
+        const char* GREEN = "\033[32m";
+        const char* RED = "\033[31m";
+        const char* RESET = "\033[0m";
+
+        std::cout << "\n============================================================\n"
+                  << "                  GRAVASTAR GEARHUB\n"
+                  << "                   E-COMMERCE SYSTEM\n"
+                  << "============================================================\n"
+                  << "\n"
+                  << GREEN
+                  << "  [1]  View Product Catalog\n"
+                  << "  [2]  Browse Products by Brand\n"
+                  << "  [3]  Search Products\n"
+                  << "  [4]  Filter Products by Price\n"
+                  << "  [5]  Add Products to Shopping Cart\n"
+                  << "  [6]  Checkout\n"
+                  << "  [7]  Undo Last Transaction\n"
+                  << "  [8]  View Partner Brands\n"
+                  << "  [9]  Sort Product Inventory\n"
+                  << RESET
+                  << RED
+                  << "  [10] Exit Application\n"
+                  << RESET
+                  << "\n"
+                  << "============================================================\n"
+                  << dbStatus << "\n";
 
                   
 
